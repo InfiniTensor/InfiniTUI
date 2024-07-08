@@ -1,0 +1,6 @@
+/target
+.config.toml
+.DS_Store
+*.archive.md
+files/
+logs/*.log.*

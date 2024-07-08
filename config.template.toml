@@ -1,0 +1,30 @@
+archive_file_name = "/Users/username/infini.archive.md"
+file_explorer_path = "/Users/username/Work/Projects/infini/files/"
+llm = "infinilm"
+# llm = "ollama"
+# llm = "chatgpt"
+# llm = "chatglm"
+
+[infinilm]
+url = "http://localhost:3000/infer"
+
+[ollama]
+url = "http://localhost:11434/api/chat"
+# model = "codellama"
+model = "llama2"
+temperature = 0.6
+top_p = 0.9
+
+[chatgpt]
+openai_api_key = ""
+model = "gpt-3.5-turbo"
+url = "https://api.openai.com/v1/chat/completions"
+temperature = 0.6
+top_p = 0.9
+
+[chatglm]
+chatglm_api_key = ""
+model = "glm-4"
+url = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+temperature = 0.6
+top_p = 0.9
