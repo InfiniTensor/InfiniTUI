@@ -40,12 +40,18 @@
 
 1. 配置文件
 
-可以使用 TOML 配置文件进行配置。文件应位于：
+配置文件使用 TOML 配置文件进行配置。文件默认位置为：
 
-- Linux：`$HOME/.config/infini/config.toml` 或 `$XDG_CONFIG_HOME/infini/config.toml`
-- Mac：`$HOME/Library/Application Support/infini/config.toml`
+- Linux：`$HOME/.config/infini/` 或 `$XDG_CONFIG_HOME/infini/`
+- Mac：`$HOME/Library/Application Support/infini/`
 
-需要配置的文件如下：
+**你也可以自定义配置文件目录**：
+
+```
+export CONFIG_DIR=/path/to/infiniinfini_config_dir/
+```
+
+**需要配置的文件如下**：
 
 - `config.toml`，指定使用的模型等信息
 - `prompts.toml`，设置默认的 prompts 信息

@@ -8,6 +8,9 @@ use unicode_width::UnicodeWidthStr;
 use crate::app::FocusedBlock;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
+use std::time::{Duration, Instant};
+use tokio::time::interval;
+
 #[derive(Debug, PartialEq)]
 pub enum Mode {
     Normal,
@@ -111,6 +114,14 @@ impl Prompt<'_> {
                 KeyCode::Esc => {
                     self.mode = Mode::Normal;
                     self.update(&FocusedBlock::Prompt);
+                }
+
+                KeyCode::Left => {
+                    self.editor.move_cursor(CursorMove::Back);
+                }
+
+                KeyCode::Right => {
+                    self.editor.move_cursor(CursorMove::Forward);
                 }
                 _ => {}
             },

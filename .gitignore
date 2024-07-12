@@ -4,3 +4,4 @@
 *.archive.md
 files/
 logs/*.log.*
+.config/

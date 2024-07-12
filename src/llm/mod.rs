@@ -16,6 +16,7 @@ use serde_json::{json, Value};
 use std;
 use std::collections::HashMap;
 use std::env;
+use std::path::PathBuf;
 use tracing::info;
 
 pub mod chatglm;
@@ -81,13 +82,26 @@ impl LLMModel {
 }
 
 pub fn read_default_prompts() -> Vec<HashMap<String, String>> {
-    let prompts_path = dirs::config_dir()
-        .unwrap()
-        .join("infini")
-        .join("prompt.toml");
+    let conf_dir = match env::var("CONFIG_DIR") {
+        Ok(dir) => {
+            info!("Using custom config directory: {}", dir);
+            PathBuf::from(dir)
+        }
+        Err(env::VarError::NotPresent) => {
+            let default_dir = dirs::config_dir().unwrap().join("infini");
+            info!("Using default config directory: {:?}", default_dir);
+            default_dir
+        }
+        Err(e) => {
+            panic!("Failed to read CONFIG_DIR: {}", e);
+        }
+    };
+
+    // 构造完整的配置文件路径
+    let prompts_path = conf_dir.join("prompt.toml");
 
     if !prompts_path.exists() {
-        panic!("Error: 'prompts.toml' not found in the current working directory.");
+        info!("'prompts.toml' not found in the current config directory.");
     }
 
     read_messages_from_toml(&prompts_path.to_str().unwrap())
@@ -127,8 +141,20 @@ pub struct PromptsConfig {
 }
 
 pub fn read_messages_from_toml(file_path: &str) -> Vec<HashMap<String, String>> {
-    let contents = fs::read_to_string(file_path).expect("Failed to read TOML file");
-    let config: PromptsConfig = toml::from_str(&contents).expect("Failed to parse TOML");
+    let contents = fs::read_to_string(file_path).unwrap_or_default();
+
+    let config: PromptsConfig = toml::from_str(&contents).unwrap_or_else(|_| PromptsConfig {
+        messages: vec![
+            Message {
+                role: "system".to_string(),
+                content: "你是一个 ai 助手，为用户解决问题".to_string(),
+            },
+            Message {
+                role: "assistant".to_string(),
+                content: "请一步步思考".to_string(),
+            },
+        ],
+    });
 
     config
         .messages

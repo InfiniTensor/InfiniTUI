@@ -7,7 +7,8 @@ use std::{
     rc::Rc,
     sync::atomic::{AtomicBool, Ordering},
 };
-use tokio::time::{self, Duration}; // 引用 Spinner 模块
+use tokio::time::{self, Duration};
+use tracing::info; // 引用 Spinner 模块
 
 use super::formatter::Formatter;
 
@@ -119,46 +120,11 @@ impl Chat<'_> {
         }
     }
 
-    // pub fn render(&mut self, frame: &mut Frame, area: Rect) {
-    //     let mut text = self.formatted_chat.clone();
-    //     text.extend(self.answer.formatted_answer.clone());
-
-    //     self.area_height = area.height;
-    //     self.area_width = area.width;
-
-    //     let scroll: u16 = if self
-    //         .automatic_scroll
-    //         .load(std::sync::atomic::Ordering::Relaxed)
-    //     {
-    //         let scroll = self.height().saturating_sub(self.area_height.into()) as u16;
-    //         self.scroll = scroll;
-    //         scroll
-    //     } else {
-    //         self.scroll
-    //     };
-
-    //     let chat = Paragraph::new(text)
-    //         .scroll((scroll, 0))
-    //         .wrap(Wrap { trim: false })
-    //         .block(
-    //             Block::default()
-    //                 .title("InfiniLM AI Chat")
-    //                 .borders(Borders::ALL)
-    //                 .border_style(Style::default().fg(Color::Green))
-    //                 .border_type(BorderType::Rounded)
-    //                 .style(Style::default()),
-    //         )
-    //         .style(Style::default().fg(Color::White)) // 设置默认样式为白色字体，黑色背景
-    //         .alignment(Alignment::Left);
-
-    //     frame.render_widget(chat, area);
-    // }
-
     pub fn render(&mut self, frame: &mut Frame, area: Rect) {
         let mut text = self.formatted_chat.clone();
         text.extend(self.answer.formatted_answer.clone());
 
-        // 设置每个 Line 的 spans 中每个 Span 的样式为白色字体
+        // 设置每个 Line 的 spans 中每个 Span 的样式，如果没有设置颜色则设置为白色
         let styled_lines: Vec<Line> = text
             .lines
             .iter()
@@ -166,9 +132,16 @@ impl Chat<'_> {
                 spans: line
                     .spans
                     .iter()
-                    .map(|span| Span::styled(span.content.clone(), Style::default()))
+                    .map(|span| {
+                        let style = if span.style.fg.is_none() {
+                            Style::default().fg(Color::Red)
+                        } else {
+                            span.style
+                        };
+                        Span::styled(span.content.clone(), style)
+                    })
                     .collect(),
-                style: Style::default(),
+                style: Style::default().fg(Color::Red),
                 alignment: line.alignment,
             })
             .collect();

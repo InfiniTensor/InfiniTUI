@@ -4,6 +4,10 @@ use toml;
 use dirs;
 use serde::Deserialize;
 
+use std::env;
+use std::path::PathBuf;
+use tracing::info;
+
 #[derive(Deserialize, Debug)]
 pub struct Config {
     #[serde(default = "default_archive_file_name")]
@@ -194,17 +198,32 @@ impl KeyBindings {
 
 impl Config {
     pub fn load() -> Self {
-        let conf_path = dirs::config_dir()
-            .unwrap()
-            .join("infini")
-            .join("config.toml");
+        let conf_dir = match env::var("CONFIG_DIR") {
+            Ok(dir) => {
+                info!("Using custom config directory: {}", dir);
+                PathBuf::from(dir)
+            }
+            Err(env::VarError::NotPresent) => {
+                let default_dir = dirs::config_dir().unwrap().join("infini");
+                info!("Using default config directory: {:?}", default_dir);
+                default_dir
+            }
+            Err(e) => {
+                panic!("Failed to read CONFIG_DIR: {}", e);
+            }
+        };
 
-        let config = std::fs::read_to_string(conf_path).unwrap_or_default();
-        let app_config: Config = toml::from_str(&config).unwrap();
+        // 构造完整的配置文件路径
+        let conf_path = conf_dir.join("config.toml");
+
+        let config = std::fs::read_to_string(&conf_path)
+            .unwrap_or_else(|_| panic!("Failed to read config file: {:?}", conf_path));
+        let app_config: Config = toml::from_str(&config)
+            .unwrap_or_else(|_| panic!("Failed to parse config file: {:?}", conf_path));
 
         if app_config.llm == LLMBackend::Ollama && app_config.ollama.is_none() {
             eprintln!("Config for Ollama is not provided");
-            std::process::exit(1)
+            std::process::exit(1);
         }
 
         app_config
