@@ -1,5 +1,6 @@
 use std;
 
+use ratatui::prelude::*;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style, Stylize},
@@ -7,6 +8,8 @@ use ratatui::{
     widgets::{Block, BorderType, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap},
     Frame,
 };
+
+use rust_i18n::t;
 
 use crate::app::{App, FocusedBlock};
 
@@ -110,24 +113,49 @@ pub fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
 }
 
 pub fn render(app: &mut App, frame: &mut Frame) {
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(1),  // 标题栏
+            Constraint::Min(1),     // 聊天区域
+            Constraint::Length(3),  // 输入框
+            Constraint::Length(1),  // 状态栏
+        ])
+        .split(frame.size());
+
+    // 渲染标题栏
+    render_title_bar(frame, chunks[0]);
+
+    // 渲染聊天区域
+    // 渲染聊天区域
+        app.chat.render(frame, chunks[1]);
+
+    // 渲染输入框
+    app.prompt.render(frame, chunks[2]);
+
+    // 渲染状态栏
+    render_status_bar(frame, chunks[3]);
+
+    // 渲染其他弹出窗口 (如果需要)
+    render_popups(app, frame);
+}
+
+fn render_title_bar(frame: &mut Frame, area: Rect) {
+    let title = Paragraph::new(t!("ai_chat_title"))
+        .style(Style::default().fg(Color::White))
+        .alignment(Alignment::Center);
+    frame.render_widget(title, area);
+}
+
+fn render_status_bar(frame: &mut Frame, area: Rect) {
+    let status = Paragraph::new(t!("status_area"))
+        .style(Style::default().fg(Color::White))
+        .alignment(Alignment::Left);
+    frame.render_widget(status, area);
+}
+
+fn render_popups(app: &mut App, frame: &mut Frame) {
     let frame_size = frame.size();
-
-    let prompt_block_height = app.prompt.height(&frame_size) + 3;
-
-    let (chat_block, prompt_block) = {
-        let chunks = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([Constraint::Min(1), Constraint::Length(prompt_block_height)].as_ref())
-            .split(frame.size());
-        (chunks[0], chunks[1])
-    };
-
-    // Chat
-    app.chat.render(frame, chat_block);
-
-    // Prompt
-    app.prompt.render(frame, prompt_block);
-
     // History
     if let FocusedBlock::History | FocusedBlock::Preview = app.focused_block {
         let area = centered_rect(80, 80, frame_size);

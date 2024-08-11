@@ -63,6 +63,8 @@ archive_file_name = "/Users/username/infini.archive.md"
 file_explorer_path = "/Users/username/Work/Projects/infini/files/"
 llm = "infinilm"
 
+language = "zh-CN"  # 或 "en"
+
 [infinilm]
 url = "http://localhost:3000/infer"
 ```
@@ -97,6 +99,17 @@ content = """
 > infini
 ```
 
+3. 界面多语言支持
+
+目前支持 中文 和 英文 两种语言：
+
+可以在编译运行时指定 `--lang` 参数指定语言
+
+```
+> cargo run -- --lang en
+```
+
+也可以在 `config.toml` 中配置 `language` 语言，默认为 中文（`zh-CN`）
 
 ## 基本操作
 

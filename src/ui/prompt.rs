@@ -33,7 +33,7 @@ impl Default for Prompt<'_> {
         editor.set_selection_style(Style::default().bg(Color::White));
 
         let block = Block::default()
-            .title("Input Area (`TAB` switch Area, `?` for help)")
+            .title(t!("input_msg").into_owned())
             .border_type(BorderType::Thick)
             .borders(Borders::ALL)
             .border_style(Style::default().fg(Color::Black))
@@ -74,7 +74,7 @@ impl Prompt<'_> {
 
     pub fn update(&mut self, focused_block: &FocusedBlock) {
         self.block = Block::default()
-            .title("Input Area (`TAB` switch Area, `?` for help)")
+            .title(t!("input_msg").into_owned())
             .borders(Borders::ALL)
             .style(Style::default())
             .border_type(match focused_block {
@@ -316,4 +316,5 @@ impl Prompt<'_> {
         self.editor.set_block(self.block.clone());
         frame.render_widget(self.editor.widget(), block);
     }
+
 }

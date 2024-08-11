@@ -5,10 +5,13 @@ use ratatui::{
     Frame,
 };
 
+use rust_i18n::t;
+use std::borrow::Cow;
+
 pub struct Help {
     block_height: usize,
     state: TableState,
-    keys: &'static [(&'static str, &'static str)],
+    keys: Vec<(&'static str, Cow<'static, str>)>,
 }
 
 impl Default for Help {
@@ -19,26 +22,26 @@ impl Default for Help {
         Self {
             block_height: 0,
             state,
-            keys: &[
-                ("Esc", "Switch to Normal mode / Dismiss pop-up"),
-                ("Tab", "Switch the focus"),
+            keys: vec![
+                ("Esc", t!("help_esc")),
+                ("Tab", t!("help_tab")),
                 (
                     "ctrl + n",
-                    "Start new chat and save the previous one to the history",
+                    t!("help_ctrl_n"),
                 ),
                 (
                     "ctrl + s",
-                    "Save the chat to  file in the current directory",
+                    t!("help_ctrl_s"),
                 ),
-                ("ctrl + f", "Show file explorer"),
-                ("ctrl + p", "Code to prompt in file explorer"),
-                ("ctrl + h", "Show history"),
-                ("ctrl + t", "Stop the stream response"),
-                ("j or Down", "Scroll down"),
-                ("k or Up", "Scroll up"),
-                ("G", "Go to the end"),
-                ("gg", "Go to the top"),
-                ("?", "show help"),
+                ("ctrl + f", t!("help_ctrl_f")),
+                ("ctrl + p", t!("help_ctrl_p")),
+                ("ctrl + h", t!("help_ctrl_h")),
+                ("ctrl + t", t!("help_ctrl_t")),
+                ("j or Down", t!("help_j_or_down")),
+                ("k or Up", t!("help_k_or_up")),
+                ("G", t!("help_g")),
+                ("gg", t!("help_gg")),
+                ("?", t!("help_?")),
             ],
         }
     }
@@ -84,7 +87,7 @@ impl Help {
         let rows: Vec<Row> = self
             .keys
             .iter()
-            .map(|key| Row::new(vec![key.0, key.1]))
+            .map(|key| Row::new(vec![key.0, &key.1]))
             .collect();
 
         let table = Table::new(rows, widths).block(

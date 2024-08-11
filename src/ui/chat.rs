@@ -12,6 +12,11 @@ use tracing::info; // 引用 Spinner 模块
 
 use super::formatter::Formatter;
 
+use ratatui::prelude::*;
+use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
+
+use rust_i18n::t;
+
 #[derive(Debug, Clone, Default)]
 pub struct Answer<'a> {
     pub plain_answer: String,
@@ -20,6 +25,7 @@ pub struct Answer<'a> {
 
 #[derive(Debug, Clone)]
 pub struct ChatMessage {
+    // pub sender: String,
     pub content: String,
     pub style: Style,
 }
@@ -46,6 +52,8 @@ pub struct Chat<'a> {
     pub automatic_scroll: Rc<AtomicBool>,
     pub ai_typing: bool,
     pub spinner: Spinner, // 使用 Spinner
+    // pub messages: Vec<ChatMessage>,
+
 }
 
 impl Default for Chat<'_> {
@@ -124,33 +132,41 @@ impl Chat<'_> {
         let mut text = self.formatted_chat.clone();
         text.extend(self.answer.formatted_answer.clone());
 
-        // 设置每个 Line 的 spans 中每个 Span 的样式，如果没有设置颜色则设置为白色
         let styled_lines: Vec<Line> = text
             .lines
             .iter()
-            .map(|line| Line {
-                spans: line
+            .map(|line| {
+                let spans: Vec<Span> = line
                     .spans
                     .iter()
                     .map(|span| {
-                        let style = if span.style.fg.is_none() {
-                            Style::default().fg(Color::Red)
+                        if span.content.starts_with("👤:") {
+                            // 用户消息
+                            Span::styled(span.content.clone(), Style::default().fg(Color::Cyan))
+                        } else if span.content.starts_with("🤖:") {
+                            // AI 回复的开头
+                            Span::styled(span.content.clone(), Style::default().fg(Color::Green))
+                        } else if line.spans[0].content.starts_with("🤖:") {
+                            // AI 回复的内容
+                            if span.style.fg.is_some() {
+                                // 保留代码高亮
+                                Span::styled(span.content.clone(), span.style)
+                            } else {
+                                // 非代码文本使用绿色
+                                Span::styled(span.content.clone(), Style::default().fg(Color::Green))
+                            }
                         } else {
-                            span.style
-                        };
-                        Span::styled(span.content.clone(), style)
+                            // 其他情况，保持原样
+                            span.clone()
+                        }
                     })
-                    .collect(),
-                style: Style::default().fg(Color::Red),
-                alignment: line.alignment,
+                    .collect();
+
+                Line::from(spans)
             })
             .collect();
 
-        let styled_text = Text {
-            lines: styled_lines,
-            alignment: Some(Alignment::Left), // 根据需要设置对齐方式
-            style: Style::default(),
-        };
+        let styled_text = Text::from(styled_lines);
 
         self.area_height = area.height;
         self.area_width = area.width;
@@ -171,13 +187,11 @@ impl Chat<'_> {
             .wrap(Wrap { trim: false })
             .block(
                 Block::default()
-                    .title("InfiniLM AI Chat")
+                    .title(t!("ai_chat_title").into_owned())
                     .borders(Borders::ALL)
                     .border_style(Style::default().fg(Color::Green))
                     .border_type(BorderType::Rounded)
-                    .style(Style::default()),
             )
-            // .style(Style::default().fg(Color::White).bg(Color::Black))
             .alignment(Alignment::Left);
 
         frame.render_widget(chat, area);

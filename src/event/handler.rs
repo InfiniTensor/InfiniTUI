@@ -357,6 +357,7 @@ pub async fn handle_key_events(
                     .lines
                     .push(Line::raw("🤖: ".to_string()));
 
+
                 let terminate_response_signal = app.terminate_response_signal.clone();
 
                 let sender = sender.clone();

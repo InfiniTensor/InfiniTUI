@@ -10,6 +10,8 @@ use ratatui::text::Line;
 
 use std::sync::Arc;
 
+use crate::set_language;
+
 pub type AppResult<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -38,10 +40,14 @@ pub struct App<'a> {
     pub previous_key: KeyCode,
     pub config: Arc<Config>,
     pub formatter: &'a Formatter<'a>,
+    // pub chat_scroll: usize,
 }
 
 impl<'a> App<'a> {
     pub fn new(config: Arc<Config>, formatter: &'a Formatter<'a>) -> Self {
+        // 设置语言
+        set_language(&config.language);
+
         Self {
             running: true,
             prompt: Prompt::default(),

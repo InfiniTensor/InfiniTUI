@@ -57,3 +57,8 @@ inquire = "0.7.4"
 ignore = "0.4.22"
 tiktoken-rs = "0.5.8"
 handlebars = "5.1.2"
+rust-i18n = "3"
+
+
+[package.metadata.i18n]
+available-locales = ["en", "zh-CN"]

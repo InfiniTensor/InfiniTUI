@@ -51,6 +51,7 @@ impl LLM for InfiniLM {
         // "inputs": [{"role": "user", "content": "用rust写个topk"}]
         let body: Value = json!({
             "inputs":messages,
+            "encoding": "text",
             "temperature": 0.9,
             "top-k": 100,
             "top-p": 0.9,
@@ -59,13 +60,15 @@ impl LLM for InfiniLM {
 
         info!("InfiniLM body data json: {:?} ", body);
 
-        let response = self
-            .client
-            .post(&self.url)
-            .headers(headers)
-            .json(&body)
-            .send()
-            .await?;
+        let response = reqwest::ClientBuilder::new()
+                            .no_proxy() // 本地模型不需要走代理
+                            .build()
+                            .unwrap()
+                            .post(&self.url)
+                            .headers(headers)
+                            .json(&body)
+                            .send()
+                            .await?;
 
         match response.error_for_status() {
             Ok(mut res) => {

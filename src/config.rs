@@ -33,6 +33,13 @@ pub struct Config {
     // pub file_explore_path
     #[serde(default = "default_file_root")]
     pub file_explorer_path: String,
+
+    #[serde(default = "default_language")]
+    pub language: String,
+}
+
+pub fn default_language() -> String {
+    "zh-CN".to_string()
 }
 
 pub fn default_archive_file_name() -> String {
@@ -218,13 +225,15 @@ impl Config {
 
         let config = std::fs::read_to_string(&conf_path)
             .unwrap_or_else(|_| panic!("Failed to read config file: {:?}", conf_path));
-        let app_config: Config = toml::from_str(&config)
+        let mut app_config: Config = toml::from_str(&config)
             .unwrap_or_else(|_| panic!("Failed to parse config file: {:?}", conf_path));
 
         if app_config.llm == LLMBackend::Ollama && app_config.ollama.is_none() {
             eprintln!("Config for Ollama is not provided");
             std::process::exit(1);
         }
+
+        eprintln!("app_config.language {:?}", app_config.language);
 
         app_config
     }

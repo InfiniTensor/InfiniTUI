@@ -10,11 +10,15 @@ use tokio::sync::Mutex;
 #[tokio::main]
 async fn main() -> AppResult<()> {
     setup_logging()?;
-    infini::cli().version(crate_version!()).get_matches();
+    let matches = infini::cli().version(crate_version!()).get_matches();
     let config = Arc::new(Config::load());
     let formatter = setup_formatter(&config)?;
 
     let mut app = App::new(config.clone(), &formatter);
+
+    // 如果命令行指定了语言，就使用命令行的，否则使用配置文件的
+    let lang = matches.get_one::<String>("lang").unwrap_or(&config.language);
+    set_language(lang);
 
     let llm = Arc::new(Mutex::new(
         LLMModel::init(&config.llm, config.clone()).await,
